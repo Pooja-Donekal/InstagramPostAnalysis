@@ -20,20 +20,22 @@ captions=[]
 latitude=[]
 longitude=[]
 tags=[]
+months=[]
 for media in recent_media:
-    captions.append(media.caption.text)
+    if hasattr(media.caption,'text'):
+        captions.append(media.caption.text)
     photos.append('<img src="%s"/>' % media.images['standard_resolution'].url)
     tags.append(media.tags)
     if hasattr(media,'location'):
         latitude.append(media.location.point.latitude)
         longitude.append(media.location.point.longitude)
+    months.append(media.created_time.month)
 
 indicoio.config.api_key = '08bfe451983fff1dffdbac0a0e77d0a2'
-
 happy=0
 sad=0
-for c in captions:
-    if indicoio.sentiment(c)>0.5:
+for c in range(len(captions)):
+    if indicoio.sentiment(captions[c])>0.5:
         happy=happy+1
     else:
         sad=sad+1
@@ -46,14 +48,7 @@ for l in range(len(latitude)):
 
 
 def detect_face(face_file, max_results=4):
-    """Uses the Vision API to detect faces in the given file.
 
-    Args:
-        face_file: A file-like object containing an image with faces.
-
-    Returns:
-        An array of dicts with information about the faces in the picture.
-    """
     image_content = face_file.read()
     batch_request = [{
         'image': {
