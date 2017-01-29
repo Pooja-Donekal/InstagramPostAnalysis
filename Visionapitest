@@ -16,7 +16,42 @@ def getEmotion(caption):
     extract='entities,keywords',
     sentiment=1,
     max_items=1)
-    return sentimentValues
+    return sentimentValues['keywords'][0]['sentiment']['type']
+
+def getImageLocation(imageURL):
+    index=1
+    for URL in photos:
+        URL =URL[10:len(URL)-3]
+        url=urllib2.urlopen(URL)
+        f=open('/Users/poojadonekal/Downloads/InstaProject/instaimage'+str(index)+'.jpg', 'w+')
+        f.write(url.read())
+        index=index+1
+    for i in range(2,index):
+        f=open('/Users/poojadonekal/Downloads/InstaProject/instaimage'+str(i)+'.jpg','r')
+        detect_location(f)
+
+def detect_location(fileInfo,max=4):
+     image_content = face_file.read()
+    batch_request = [{
+        'image': {
+            'content': base64.b64encode(image_content).decode('utf-8')
+            },
+        'features': [{
+            'type': 'LANDMARK_DETECTION',
+            'maxResults': max_results,
+            }]
+        }]
+
+    response = requests.post('https://vision.googleapis.com/v1/images:annotate',
+                            json.dumps({'requests': batch_request}).encode(),
+                                     params={'key':'AIzaSyBtbY6knJETlJrx3xOYXlvI9MS9rfKaH2Q'},
+                                            headers={'Content-Type':'application/json'})
+    response=response.json()
+    #if "faceAnnotations" in response['responses'][0].keys():
+     #   response=response['responses'][0]['faceAnnotations']
+      #  return response[0]["joyLikelihood"]
+    #else:
+        return None
 
 def getImageEmotion(imageURL):
     index=1
@@ -30,9 +65,12 @@ def getImageEmotion(imageURL):
         f=open('/Users/poojadonekal/Downloads/InstaProject/instaimage'+str(i)+'.jpg','r')
         detect_face(f)
         
-        
+#Access Tokens      
 access_token = "2008920528.bea2622.c43b3f70922f46a2b5b059e3dfd46550"
 client_secret = "da9efc0b7b1848f5b592feca0d3f3fb5"
+
+
+#Instagram call
 api = InstagramAPI(access_token=access_token, client_secret=client_secret)
 recent_media, next_ = api.user_recent_media(user_id="2008920528", count=10)
 photos=[]
@@ -42,17 +80,30 @@ longitude=[]
 tags=[]
 months=[]
 count = 0
+
+#media Fetch from Instagram
 for media in recent_media:
     if hasattr(media.caption,'text'):
         captions.append(media.caption.text)
     else:
-        captions.append(getImageEmotion(media.images['standard_resolution'].url))
+        retValue = getImageEmotion(media.images['standard_resolution'].url)
+        if (retValue == None)
+            captions.append('Neutral')
+        else
+            captions.append(retValue)
     #photos.append('<img src="%s"/>' % media.images['standard_resolution'].url)
-    tags.append(media.tags)
+    #tags.append(media.tags)
     if hasattr(media,'location'):
         latitude.append(media.location.point.latitude)
         longitude.append(media.location.point.longitude)
+    else:
+        retValue = getImageLocation(media.images['standard_resolution'].url)
+        if (retValue == None):
+            latitude.append(0)
+            longitude.append(0)
     months.append(media.created_time.month)
+    print(count)
+    print(media.created_time.month)
     print getEmotion(captions[count])
     count = count + 1
     
@@ -98,4 +149,6 @@ def detect_face(face_file, max_results=4):
     response=response.json()
     if "faceAnnotations" in response['responses'][0].keys():
         response=response['responses'][0]['faceAnnotations']
-        print response[0]["joyLikelihood"]
+        return response[0]["joyLikelihood"]
+    else:
+        return None
