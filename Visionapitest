@@ -1,0 +1,88 @@
+from oauth2client.client import GoogleCredentials
+from googleapiclient.discovery import build
+from oauth2client.client import AccessTokenCredentials
+from urllib import urlencode
+from base64 import b64encode
+import json
+import requests
+from PIL import Image
+import urllib2
+from instagram.client import InstagramAPI
+import indicoio
+import geocoder
+
+access_token = "2008920528.bea2622.c43b3f70922f46a2b5b059e3dfd46550"
+client_secret = "da9efc0b7b1848f5b592feca0d3f3fb5"
+api = InstagramAPI(access_token=access_token, client_secret=client_secret)
+recent_media, next_ = api.user_recent_media(user_id="2008920528", count=10)
+photos=[]
+captions=[]
+latitude=[]
+longitude=[]
+tags=[]
+for media in recent_media:
+    captions.append(media.caption.text)
+    photos.append('<img src="%s"/>' % media.images['standard_resolution'].url)
+    tags.append(media.tags)
+    if hasattr(media,'location'):
+        latitude.append(media.location.point.latitude)
+        longitude.append(media.location.point.longitude)
+
+indicoio.config.api_key = '08bfe451983fff1dffdbac0a0e77d0a2'
+
+happy=0
+sad=0
+for c in captions:
+    if indicoio.sentiment(c)>0.5:
+        happy=happy+1
+    else:
+        sad=sad+1
+print "happy: " + str(happy)
+print "sad:" +str(sad)                       
+citiesvisited=[]                      
+for l in range(len(latitude)): 
+    g = geocoder.google([latitude[l],longitude[l]], method='reverse')
+    citiesvisited.append(str(g.city))
+
+
+def detect_face(face_file, max_results=4):
+    """Uses the Vision API to detect faces in the given file.
+
+    Args:
+        face_file: A file-like object containing an image with faces.
+
+    Returns:
+        An array of dicts with information about the faces in the picture.
+    """
+    image_content = face_file.read()
+    batch_request = [{
+        'image': {
+            'content': base64.b64encode(image_content).decode('utf-8')
+            },
+        'features': [{
+            'type': 'FACE_DETECTION',
+            'maxResults': max_results,
+            }]
+        }]
+
+    response = requests.post('https://vision.googleapis.com/v1/images:annotate',
+                            json.dumps({'requests': batch_request}).encode(),
+                                     params={'key':'AIzaSyBtbY6knJETlJrx3xOYXlvI9MS9rfKaH2Q'},
+                                            headers={'Content-Type':'application/json'})
+    response=response.json()
+    if "faceAnnotations" in response['responses'][0].keys():
+        response=response['responses'][0]['faceAnnotations']
+        print response[0]["joyLikelihood"]
+
+index=1
+for URL in photos:
+    URL =URL[10:len(URL)-3]
+    url=urllib2.urlopen(URL)
+    f=open('/Users/poojadonekal/Downloads/InstaProject/instaimage'+str(index)+'.jpg', 'w+')
+    f.write(url.read())
+    index=index+1
+    #detect_face(f)
+
+for i in range(2,index):
+    f=open('/Users/poojadonekal/Downloads/InstaProject/instaimage'+str(i)+'.jpg','r')
+    detect_face(f)
