@@ -1,3 +1,4 @@
+# Required Imports
 from urllib import urlencode
 from base64 import b64encode
 import json
@@ -10,16 +11,14 @@ import geocoder
 from watson_developer_cloud import AlchemyLanguageV1
 import csv
 
-
+#Get EMotion from Text
 def getEmotion(caption):
-    #print caption
     alchemy_language = AlchemyLanguageV1(api_key='b84b93304f44cf09651f4238b8b45ceea7ac8078')
     sentimentValues = alchemy_language.combined(
-        text=caption,
+    text=caption,
     extract='entities,keywords',
     sentiment=1,
     max_items=1)
-    #print sentimentValues
     if (len(sentimentValues['keywords'])>0):
         return sentimentValues['keywords'][0]['sentiment']['type']
     else:
@@ -44,28 +43,7 @@ def getImageLocation(imageURL):
         f=open('/Users/poojadonekal/Downloads/InstaProject/instaimage'+str(i)+'.jpg','r')
         #detect_location(f)
 
-"""def detect_location(fileInfo,max=4):
-     image_content = face_file.read()
-     batch_request =[{
-        'image': {
-            'content': base64.b64encode(image_content).decode('utf-8')
-            },
-        'features': [{
-            'type': 'LANDMARK_DETECTION',
-            'maxResults': max_results,
-            }]
-    }]
-    response = requests.post('https://vision.googleapis.com/v1/images:annotate',
-                            json.dumps({'requests': batch_request}).encode(),
-                                     params={'key':'AIzaSyBtbY6knJETlJrx3xOYXlvI9MS9rfKaH2Q'},
-                                            headers={'Content-Type':'application/json'})
-    response=response.json()
-    #if "faceAnnotations" in response['responses'][0].keys():
-     #   response=response['responses'][0]['faceAnnotations']
-      #  return response[0]["joyLikelihood"]
-    #else:
-        return None"""
-
+#Get User emotion from Image
 def getImageEmotion(imageURL):
     index=1
     for URL in photos:
@@ -81,7 +59,6 @@ def getImageEmotion(imageURL):
 #Access Tokens      
 access_token = "2008920528.bea2622.c43b3f70922f46a2b5b059e3dfd46550"
 client_secret = "da9efc0b7b1848f5b592feca0d3f3fb5"
-
 
 #Instagram call
 api = InstagramAPI(access_token=access_token, client_secret=client_secret)
@@ -106,8 +83,6 @@ for media in recent_media:
             captions.append('Neutral')
         else:
             captions.append(retValue)
-    #photos.append('<img src="%s"/>' % media.images['standard_resolution'].url)
-    #tags.append(media.tags)
     if hasattr(media,'location'):
         latitude.append(media.location.point.latitude)
         longitude.append(media.location.point.longitude)
@@ -117,10 +92,6 @@ for media in recent_media:
             latitude.append(0)
             longitude.append(0)
     months.append(media.created_time.month)
-    
-    #print(count)
-    #print(media.created_time.month)
-    #print(getEmotion(captions[count]))
     emotions.append(getEmotion(captions[count]))
     count = count + 1
 finaldata={}
