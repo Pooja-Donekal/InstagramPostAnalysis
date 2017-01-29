@@ -9,6 +9,28 @@ import indicoio
 import geocoder
 from watson_developer_cloud import AlchemyLanguageV1
 
+def getEmotion(caption):
+    alchemy_language = AlchemyLanguageV1(api_key='b84b93304f44cf09651f4238b8b45ceea7ac8078')
+    sentimentValues = alchemy_language.combined(
+        text=caption,
+    extract='entities,keywords',
+    sentiment=1,
+    max_items=1)
+    return sentimentValues
+
+def getImageEmotion(imageURL):
+    index=1
+    for URL in photos:
+        URL =URL[10:len(URL)-3]
+        url=urllib2.urlopen(URL)
+        f=open('/Users/poojadonekal/Downloads/InstaProject/instaimage'+str(index)+'.jpg', 'w+')
+        f.write(url.read())
+        index=index+1
+    for i in range(2,index):
+        f=open('/Users/poojadonekal/Downloads/InstaProject/instaimage'+str(i)+'.jpg','r')
+        detect_face(f)
+        
+        
 access_token = "2008920528.bea2622.c43b3f70922f46a2b5b059e3dfd46550"
 client_secret = "da9efc0b7b1848f5b592feca0d3f3fb5"
 api = InstagramAPI(access_token=access_token, client_secret=client_secret)
@@ -31,18 +53,11 @@ for media in recent_media:
         latitude.append(media.location.point.latitude)
         longitude.append(media.location.point.longitude)
     months.append(media.created_time.month)
-    print (getEmotion(caption[count]))
+    print getEmotion(captions[count])
     count = count + 1
     
 
-def getEmotion(caption):
-    alchemy_language = AlchemyLanguageV1(api_key='b84b93304f44cf09651f4238b8b45ceea7ac8078')
-    sentimentValues = alchemy_language.combined(
-        text=caption,
-    extract='entities,keywords',
-    sentiment=1,
-    max_items=1)
-    return sentimentValues
+
     
 
 indicoio.config.api_key = '08bfe451983fff1dffdbac0a0e77d0a2'
@@ -60,17 +75,7 @@ for l in range(len(latitude)):
     g = geocoder.google([latitude[l],longitude[l]], method='reverse')
     citiesvisited.append(str(g.city))
 
-def getImageEmotion(imageURL):
-    index=1
-    for URL in photos:
-        URL =URL[10:len(URL)-3]
-        url=urllib2.urlopen(URL)
-        f=open('/Users/poojadonekal/Downloads/InstaProject/instaimage'+str(index)+'.jpg', 'w+')
-        f.write(url.read())
-        index=index+1
-    for i in range(2,index):
-        f=open('/Users/poojadonekal/Downloads/InstaProject/instaimage'+str(i)+'.jpg','r')
-        detect_face(f)
+
 
 
 def detect_face(face_file, max_results=4):
@@ -94,5 +99,3 @@ def detect_face(face_file, max_results=4):
     if "faceAnnotations" in response['responses'][0].keys():
         response=response['responses'][0]['faceAnnotations']
         print response[0]["joyLikelihood"]
-
-
