@@ -13,7 +13,6 @@ import csv
 
 #Get EMotion from Text
 def getEmotion(caption):
-    alchemy_language = AlchemyLanguageV1(api_key='b84b93304f44cf09651f4238b8b45ceea7ac8078')
     sentimentValues = alchemy_language.combined(
     text=caption,
     extract='entities,keywords',
@@ -25,7 +24,7 @@ def getEmotion(caption):
         if (len(sentimentValues['keywords'])>0):
             return sentimentValues['entities'][0]['sentiment']['type']
         else:
-            indicoio.config.api_key = '08bfe451983fff1dffdbac0a0e77d0a2'
+            
             if indicoio.sentiment(captions)>0.5:
                 return 'positive'
             else:
@@ -57,8 +56,7 @@ def getImageEmotion(imageURL):
         detect_face(f)
         
 #Access Tokens      
-access_token = "2008920528.bea2622.c43b3f70922f46a2b5b059e3dfd46550"
-client_secret = "da9efc0b7b1848f5b592feca0d3f3fb5"
+
 
 #Instagram call
 api = InstagramAPI(access_token=access_token, client_secret=client_secret)
@@ -149,10 +147,7 @@ def detect_face(face_file, max_results=4):
             }]
         }]
 
-    response = requests.post('https://vision.googleapis.com/v1/images:annotate',
-                            json.dumps({'requests': batch_request}).encode(),
-                                     params={'key':'AIzaSyBtbY6knJETlJrx3xOYXlvI9MS9rfKaH2Q'},
-                                            headers={'Content-Type':'application/json'})
+    
     response=response.json()
     if "faceAnnotations" in response['responses'][0].keys():
         response=response['responses'][0]['faceAnnotations']
